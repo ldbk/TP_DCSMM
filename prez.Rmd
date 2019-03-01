@@ -1,0 +1,84 @@
+---
+title: "Untitled"
+author: "moi"
+date: "March 1, 2019"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## R Markdown
+
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with R Output
+
+```{r tutorial, echo = TRUE}
+#les packages (à installer si non disponible)
+library(raster)
+library(rasterVis)
+#lire les donnees
+#preciser le chemin !
+chl<-stack("chl")
+#plot
+plot(chl)
+#une moyenne
+chlmean<-mean(chl,na.rm=T)
+#un joli graphique
+levelplot(chlmean,margin=F,zscale=T,contour=T,par.settings=
+	      viridisTheme,main="Concentration en chlorophylle a\nmoyenne 2010-2017")
+#une extraction spatiale dans le sud-ouest
+sudouest<-extent(-2,-1,44,45)
+chlsmall<-crop(chl,sudouest)
+#plot pour verifier
+plot(chlsmall)
+#une serie temporelle moyenne
+#chlts<-extract(chlsmall,sudouest,method="bilinear",fun=mean,na.rm=T)
+chlts<-cellStats(chlsmall,stat="mean",na.rm=T)
+#vecteur temporel
+temps<-strptime(gsub("X","",names(chlts)),"%Y.%m.%d")
+plot(temps,chlts,type="l")
+
+#une fonction pour calculer le P90
+p90<-function(a,na.rm=T){return(quantile(a,probs=.9,na.rm=T))}
+#une carte du P90 sur toute la série
+chlsmallp90<-stackApply(chlsmall,rep(1,nlayers(chlsmall)),p90)
+#choli plot
+levelplot(chlsmallp90,margin=F,zscale=T,contour=T,par.settings=
+	      viridisTheme,main="P90 2010-2017")
+levelplot(chlsmallp90,margin=F,zscale=F,contour=T,par.settings=
+	      viridisTheme,main="P90 2010-2017")
+#ratio
+chlsmallp90ratio<-3.33/chlsmallp90
+#fonction de classif des intervalles
+etat<-function(a){1+findInterval(a,c(0.08,0.17,0.33,0.6),rightmost.closed=T)} 	
+chlsmallp90eqr<-calc(chlsmallp90ratio,etat)
+		   
+levelplot(chlsmallp90eqr,margin=F,zscale=F,contour=T,par.settings=
+	      viridisTheme,main="P90 2010-2017")
+#ou
+plot(chlsmallp90eqr)
+
+
+
+
+```
+
+## Slide with Plot
+
+Some text
+
+```{r pressure}
+plot(rnorm(100))
+```
+
